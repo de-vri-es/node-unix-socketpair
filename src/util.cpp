@@ -171,9 +171,9 @@ napi_value raiseTypeError(napi_env env, std::string const & message) {
 	return undefined(env);
 }
 
-napi_value handleTypeError(napi_env env, std::string const & details, napi_value source, napi_valuetype wanted) {
+napi_value handleTypeError(napi_env env, std::string const & source_description, napi_value source, napi_valuetype wanted) {
 	std::string message = "invalid type";
-	if (details.size()) message += " for " + details;
+	if (source_description.size()) message += " for " + source_description;
 	message += std::string(", expected ") + toString(wanted);
 
 	{
