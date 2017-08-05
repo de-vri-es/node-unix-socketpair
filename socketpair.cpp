@@ -26,7 +26,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <node.h>
+#include "util.hpp"
+
 #include <node_api.h>
 
 #include <cerrno>
@@ -38,120 +39,6 @@
 #include <sys/socket.h>
 
 namespace node_unix_socketpair {
-
-template<typename T>
-struct maybe_value {
-	napi_status status;
-	T value;
-
-	maybe_value(napi_status status, T const & value) : status{status}, value{value} {};
-	maybe_value(napi_status status) : maybe_value{status, T{}} {};
-	maybe_value(T const & value) : maybe_value{napi_ok, value} {};
-
-	explicit operator bool() { return status == napi_ok; }
-};
-
-template<>
-struct maybe_value<void> {
-	napi_status status;
-
-	maybe_value(napi_status status) : status{status} {};
-
-	explicit operator bool() { return status == napi_ok; }
-};
-
-using maybe_napi_value = maybe_value<napi_value>;
-
-maybe_napi_value wrapInt(napi_env env, int value) {
-	napi_value result;
-	napi_status status = napi_create_number(env, value, &result);
-	return {status, result};
-}
-
-maybe_napi_value wrapString(napi_env env, std::string const & value) {
-	napi_value result;
-	napi_status status = napi_create_string_utf8(env, value.data(), value.size(), &result);
-	return {status, result};
-}
-
-maybe_napi_value makeFunction(napi_env env, char const * name, napi_callback callback, void * data = nullptr) {
-	napi_value result;
-	napi_status status = napi_create_function(env, name, callback, data, &result);
-	return {status, result};
-}
-
-maybe_value<int64_t> unwrapInt(napi_env env, maybe_napi_value value) {
-	if (!value) return value.status;
-	int64_t result;
-	napi_status status = napi_get_value_int64(env, value.value, &result);
-	return {status, result};
-}
-
-maybe_napi_value getProperty(napi_env env, maybe_napi_value object, maybe_napi_value key) {
-	if (!object) return object.status;
-	if (!key)    return key.status;
-	napi_value result;
-	napi_status status = napi_get_property(env, object.value, key.value, &result);
-	return {status, result};
-}
-
-maybe_napi_value getProperty(napi_env env, maybe_napi_value object, int key) {
-	return getProperty(env, object, wrapInt(env, key));
-}
-
-maybe_napi_value getProperty(napi_env env, maybe_napi_value object, std::string key) {
-	return getProperty(env, object, wrapString(env, key));
-}
-
-maybe_value<void> setProperty(napi_env env, maybe_napi_value object, maybe_napi_value key, maybe_napi_value value) {
-	if (!object) return object.status;
-	if (!key)    return key.status;
-	if (!value)  return value.status;
-	return napi_set_property(env, object.value, key.value, value.value);
-}
-
-maybe_value<void> setProperty(napi_env env, maybe_napi_value object, int key, maybe_napi_value value) {
-	return setProperty(env, object, wrapInt(env, key), value);
-}
-
-maybe_value<void> setProperty(napi_env env, maybe_napi_value object, std::string key, maybe_napi_value value) {
-	return setProperty(env, object, wrapString(env, key), value);
-}
-
-napi_value null(napi_env env) {
-	napi_value result;
-	napi_status status = napi_get_null(env, &result);
-	if (status != napi_ok) napi_fatal_error(nullptr, "failed to get null instance");
-	return result;
-}
-
-napi_value undefined(napi_env env) {
-	napi_value result;
-	napi_status status = napi_get_undefined(env, &result);
-	if (status != napi_ok) napi_fatal_error(nullptr, "failed to get undefined instance");
-	return result;
-}
-
-maybe_value<napi_extended_error_info const *> getErrorInfo(napi_env env) {
-	napi_extended_error_info const * info;
-	napi_status status = napi_get_last_error_info(env, &info);
-	return {status, info};
-}
-
-napi_value raise(napi_env env, std::string const & message) {
-	napi_throw_error(env, message.c_str());
-	return undefined(env);
-}
-
-napi_value handleError(napi_env env, napi_status original) {
-	maybe_value<napi_extended_error_info const *> info = getErrorInfo(env);
-	if (!info) {
-		std::string message = "napi call failed with status " + std::to_string(int(original));
-		return raise(env, message.c_str());
-	}
-	std::string message = "napi call failed with status " + std::to_string(int(original)) + ": " + info.value->error_message;
-	return raise(env, message.c_str());
-}
 
 napi_value socketpair(napi_env env, napi_callback_info info) {
 	std::size_t argc;
