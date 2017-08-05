@@ -48,6 +48,17 @@ struct maybe_value {
 
 	/// Check if the value is valid (status == napi_ok).
 	explicit operator bool() { return status == napi_ok; }
+
+	/// Test for equality (also works for T thanks to implicit conversion).
+	bool operator==(maybe_value const & o) {
+		if (status == napi_ok && o.status == napi_ok) return value == o.value;
+		return status == o.status;
+	}
+
+	/// Test for inequality (also works for T thanks to implicit conversion).
+	bool operator!=(maybe_value const & o) {
+		return !(*this == o);
+	}
 };
 
 /// Specialization of maybe_value for void.
