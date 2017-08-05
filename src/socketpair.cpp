@@ -75,7 +75,7 @@ napi_value socketpair(napi_env env, napi_callback_info info) {
 		if (!result) return handleError(env, result.status, "set result[0] to int");
 	}
 	{
-		maybe_value<void> result = setElement(env, array, 0, wrapInt(env, fds[0]));
+		maybe_value<void> result = setElement(env, array, 1, wrapInt(env, fds[1]));
 		if (!result) return handleError(env, result.status, "set result[1] to int");
 	}
 
