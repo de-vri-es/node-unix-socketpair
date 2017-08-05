@@ -1,6 +1,6 @@
 {
   "name": "unix-socketpair",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "create two connected unix sockets with the socketpair() function from POSIX",
   "main": "build/Release/unix-socketpair.node",
   "scripts": {
