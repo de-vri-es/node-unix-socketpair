@@ -21,7 +21,7 @@ let fds = socketpair(type)
 ```
 
 Create a pair of connected sockets.
-* `type`: `socketpair.SOCK_STREAM` or `socketpair.SOCK_DGRAM`
+* `type`: `socketpair.SOCK_STREAM` (default) or `socketpair.SOCK_DGRAM`
 * returns: an array holding the two file descriptors for the created sockets.
 * throws: if the underlying call to `socketpair()` fails
 
