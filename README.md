@@ -1,9 +1,9 @@
 # unix-socketpair
-This add-on exposes the real POSIX socketpair() to NodeJS applications.
+This add-on exposes the real POSIX socketpair() to Node.js applications.
 `socketpair()` is unrivaled in simplicity when you want to create connected sockets.
-It allows very easy creation of a bi-directional data channel for a child process implemented in some other language than NodeJS.
+It allows very easy creation of a bi-directional data channel for a child process implemented in some other language than Node.js.
 
-The sockets are created with the `SOCK_CLOEXEC` and `SOCK_NONBLOCK` flags, so they should work with NodeJS without a problem.
+The sockets are created with the `SOCK_CLOEXEC` and `SOCK_NONBLOCK` flags, so they should work with Node.js without a problem.
 Note that the socket is `dup()'ed` into a child process if you pass it to the `stdio` argument of `require('child_process').spawn` or friends,
 so `SOCK_CLOEXEC` will not cause problems in that scenario.
 
@@ -66,7 +66,7 @@ datagram descriptors:  [5, 6]
 ```
 
 # Wrapping in `net.Socket`
-You can create `net.Socket` instances to use one or both of the created sockets as you normally would in NodeJS.
+You can create `net.Socket` instances to use one or both of the created sockets as you normally would in Node.js.
 At the moment of writing `dgram.Socket` does not support the creation from file descriptors,
 and `net.Socket` only supports streaming sockets.
 
