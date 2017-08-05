@@ -200,9 +200,18 @@ napi_value socketpair(napi_env env, napi_callback_info info) {
 void init(napi_env env, napi_value exports, napi_value module, void *) {
 	(void) exports;
 	maybe_napi_value function = makeFunction(env, "socketpair", socketpair);
-	setProperty(env, function, "SOCK_STREAM", wrapInt(env, SOCK_STREAM));
-	setProperty(env, function, "SOCK_DGRAM",  wrapInt(env, SOCK_DGRAM));
-	setProperty(env, module, "exports", function);
+	if (!function) handleError(env, function.status);
+
+	maybe_value<void> result{napi_ok};
+
+	result = setProperty(env, function, "SOCK_STREAM", wrapInt(env, SOCK_STREAM));
+	if (!result) handleError(env, result.status);
+
+	result = setProperty(env, function, "SOCK_DGRAM",  wrapInt(env, SOCK_DGRAM));
+	if (!result) handleError(env, result.status);
+
+	result = setProperty(env, module, "exports", function);
+	if (!result) handleError(env, result.status);
 }
 
 NAPI_MODULE(unix_socketpair, init)
