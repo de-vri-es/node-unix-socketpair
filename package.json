@@ -1,0 +1,23 @@
+{
+  "name": "unix-socketpair",
+  "version": "0.1.0",
+  "description": "create two connected unix sockets with the socketpair() function from POSIX",
+  "main": "unix-socketpair.node",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/de-vri-es/node-unix-socketpair.git"
+  },
+  "keywords": [
+    "socketpair",
+    "unix"
+  ],
+  "author": "Maarten de Vries <maarten@de-vri.es>",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/de-vri-es/node-unix-socketpair/issues"
+  },
+  "homepage": "https://github.com/de-vri-es/node-unix-socketpair#readme"
+}
