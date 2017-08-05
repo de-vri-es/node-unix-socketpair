@@ -7,6 +7,10 @@ The sockets are created with the `SOCK_CLOEXEC` and `SOCK_NONBLOCK` flags, so th
 Note that the socket is `dup()'ed` into a child process if you pass it to the `stdio` argument of `require('child_process').spawn` or friends,
 so `SOCK_CLOEXEC` will not cause problems in that scenario.
 
+### Note
+The add-on is implemented with `napi`, which is still experimental.
+You will have to run `node` with the `--napi-modules` flags for now if you want to use this module.
+
 # API
 
 ## function socketpair(type)
@@ -95,8 +99,3 @@ Should output the following:
 ```
 Hello World!
 ```
-
-# Notes
-
-The add-on is implemented with `napi`, which is still experimental.
-You will have to run `node` with the `--napi-modules` flags for now if you want to use this module.
