@@ -65,25 +65,23 @@ maybe_napi_value makeFunction(napi_env env, char const * name, napi_callback cal
 maybe_value<int64_t> unwrapInt(napi_env env, maybe_napi_value value);
 
 maybe_napi_value getProperty(napi_env env, maybe_napi_value object, maybe_napi_value key);
-
-maybe_napi_value getProperty(napi_env env, maybe_napi_value object, int key);
-
 maybe_napi_value getProperty(napi_env env, maybe_napi_value object, std::string key);
-
 maybe_value<void> setProperty(napi_env env, maybe_napi_value object, maybe_napi_value key, maybe_napi_value value);
-
-maybe_value<void> setProperty(napi_env env, maybe_napi_value object, int key, maybe_napi_value value);
-
 maybe_value<void> setProperty(napi_env env, maybe_napi_value object, std::string key, maybe_napi_value value);
 
-napi_value null(napi_env env);
+maybe_napi_value getElement(napi_env env, maybe_napi_value array, int index);
+maybe_value<void> setElement(napi_env env, maybe_napi_value array, int index, maybe_napi_value value);
 
+napi_value null(napi_env env);
 napi_value undefined(napi_env env);
 
 maybe_value<napi_extended_error_info const *> getErrorInfo(napi_env env);
+std::string getErrorMessage(napi_env env);
 
 napi_value raise(napi_env env, std::string const & message);
+napi_value handleError(napi_env env, napi_status original, std::string const & message);
 
-napi_value handleError(napi_env env, napi_status original);
+napi_value raiseTypeError(napi_env env, std::string const & message);
+napi_value handleTypeError(napi_env env, std::string const & details, napi_value source, napi_valuetype wanted);
 
 }

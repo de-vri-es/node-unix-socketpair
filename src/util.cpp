@@ -32,6 +32,21 @@
 
 namespace node_unix_socketpair {
 
+char const * toString(napi_valuetype type) {
+	switch (type) {
+		case napi_undefined:  return "undefined";
+		case napi_null:       return "null";
+		case napi_boolean:    return "boolean";
+		case napi_number:     return "number";
+		case napi_string:     return "string";
+		case napi_symbol:     return "symbol";
+		case napi_object:     return "object";
+		case napi_function:   return "function";
+		case napi_external:   return "external";
+	};
+	return "unknown";
+}
+
 maybe_napi_value wrapInt(napi_env env, int value) {
 	napi_value result;
 	napi_status status = napi_create_number(env, value, &result);
@@ -88,6 +103,20 @@ maybe_value<void> setProperty(napi_env env, maybe_napi_value object, std::string
 	return setProperty(env, object, wrapString(env, key), value);
 }
 
+maybe_napi_value getElement(napi_env env, maybe_napi_value array, int index) {
+	if (!array) return array.status;
+	napi_value result;
+	napi_status status = napi_get_element(env, array.value, index, &result);
+	return {status, result};
+}
+
+maybe_value<void> setElement(napi_env env, maybe_napi_value array, int index, maybe_napi_value value) {
+	if (!array) return array.status;
+	if (!value) return value.status;
+	napi_status status = napi_set_element(env, array.value, index, value.value);
+	return {status};
+}
+
 napi_value null(napi_env env) {
 	napi_value result;
 	napi_status status = napi_get_null(env, &result);
@@ -108,19 +137,45 @@ maybe_value<napi_extended_error_info const *> getErrorInfo(napi_env env) {
 	return {status, info};
 }
 
+std::string getErrorMessage(napi_env env) {
+	maybe_value<napi_extended_error_info const *> info = getErrorInfo(env);
+	if (!info) return "";
+	return info.value->error_message;
+}
+
 napi_value raise(napi_env env, std::string const & message) {
 	napi_throw_error(env, message.c_str());
 	return undefined(env);
 }
 
-napi_value handleError(napi_env env, napi_status original) {
-	maybe_value<napi_extended_error_info const *> info = getErrorInfo(env);
-	if (!info) {
-		std::string message = "napi call failed with status " + std::to_string(int(original));
-		return raise(env, message.c_str());
-	}
-	std::string message = "napi call failed with status " + std::to_string(int(original)) + ": " + info.value->error_message;
+napi_value handleError(napi_env env, napi_status original, std::string const & details) {
+	std::string message;
+	if (details.size()) message += details + ": ";
+	message += "napi call failed with status " + std::to_string(int(original));
+
+	std::string error_details = getErrorMessage(env);
+	if (error_details.size()) message += std::string{": "} + error_details;
+
 	return raise(env, message.c_str());
+}
+
+napi_value raiseTypeError(napi_env env, std::string const & message) {
+	napi_throw_type_error(env, message.c_str());
+	return undefined(env);
+}
+
+napi_value handleTypeError(napi_env env, std::string const & details, napi_value source, napi_valuetype wanted) {
+	std::string message = "invalid type";
+	if (details.size()) message += " for " + details;
+	message += std::string(", expected ") + toString(wanted);
+
+	{
+		napi_valuetype actual;
+		maybe_value<void> result = napi_typeof(env, source, &actual);
+		if (result) message += std::string(", got ") + toString(actual);
+	}
+
+	return raiseTypeError(env, message.c_str());
 }
 
 }

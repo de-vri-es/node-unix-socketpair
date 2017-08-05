@@ -38,25 +38,23 @@
 
 #include <sys/socket.h>
 
+#include <iostream>
+
 namespace node_unix_socketpair {
 
 napi_value socketpair(napi_env env, napi_callback_info info) {
-	std::size_t argc;
-	napi_value argv;
+	std::size_t argc = 1;
+	napi_value argv[1];
 	napi_value self;
 	void * data;
 
 	{
-		napi_status status = napi_get_cb_info(env, info, &argc, &argv, &self, &data);
-		if (status != napi_ok) return handleError(env, status);
+		maybe_value<void> result = napi_get_cb_info(env, info, &argc, argv, &self, &data);
+		if (!result) return handleError(env, result.status, "napi_get_cb_info");
 	}
 
-	if (argc != 1) {
-		return raise(env, "expected exactly 1 argument: type (SOCK_STREAM or SOCK_DGRAM)");
-	}
-
-	maybe_value<int64_t> type = unwrapInt(env, getProperty(env, argv, 0));
-	if (!type) return handleError(env, type.status);
+	maybe_value<int64_t> type = unwrapInt(env, argv[0]);
+	if (!type) return handleTypeError(env, "first argument", argv[0], napi_number);
 
 	int fds[2];
 	{
@@ -70,35 +68,35 @@ napi_value socketpair(napi_env env, napi_callback_info info) {
 	napi_value array;
 	{
 		maybe_value<void> result = napi_create_array_with_length(env, 2, &array);
-		if (!result) return handleError(env, result.status);
+		if (!result) return handleError(env, result.status, "create result array");
 	}
 	{
-		maybe_value<void> result = setProperty(env, array, 0, wrapInt(env, fds[0]));
-		if (!result) return handleError(env, result.status);
+		maybe_value<void> result = setElement(env, array, 0, wrapInt(env, fds[0]));
+		if (!result) return handleError(env, result.status, "set result[0] to int");
 	}
 	{
-		maybe_value<void> result = setProperty(env, array, 0, wrapInt(env, fds[0]));
-		if (!result) return handleError(env, result.status);
+		maybe_value<void> result = setElement(env, array, 0, wrapInt(env, fds[0]));
+		if (!result) return handleError(env, result.status, "set result[1] to int");
 	}
 
-	return undefined(env);
+	return array;
 }
 
 void init(napi_env env, napi_value exports, napi_value module, void *) {
 	(void) exports;
 	maybe_napi_value function = makeFunction(env, "socketpair", socketpair);
-	if (!function) handleError(env, function.status);
+	if (!function) handleError(env, function.status, "make socketpair() function object");
 
 	maybe_value<void> result{napi_ok};
 
 	result = setProperty(env, function, "SOCK_STREAM", wrapInt(env, SOCK_STREAM));
-	if (!result) handleError(env, result.status);
+	if (!result) handleError(env, result.status, "set socketpair.SOCK_STREAM");
 
 	result = setProperty(env, function, "SOCK_DGRAM",  wrapInt(env, SOCK_DGRAM));
-	if (!result) handleError(env, result.status);
+	if (!result) handleError(env, result.status, "set socketpair.SOCK_DGRAM");
 
 	result = setProperty(env, module, "exports", function);
-	if (!result) handleError(env, result.status);
+	if (!result) handleError(env, result.status, "set export to socketpair function");
 }
 
 NAPI_MODULE(unix_socketpair, init)
