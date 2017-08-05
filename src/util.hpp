@@ -54,7 +54,12 @@ struct maybe_value<void> {
 	explicit operator bool() { return status == napi_ok; }
 };
 
-using maybe_napi_value = maybe_value<napi_value>;
+using maybe_napi_value     = maybe_value<napi_value>;
+using maybe_napi_valuetype = maybe_value<napi_valuetype>;
+
+char const * toString(napi_valuetype type);
+
+maybe_napi_valuetype type_of(napi_env env, maybe_napi_value value);
 
 maybe_napi_value wrapInt(napi_env env, int value);
 

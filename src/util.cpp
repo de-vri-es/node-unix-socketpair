@@ -47,6 +47,13 @@ char const * toString(napi_valuetype type) {
 	return "unknown";
 }
 
+maybe_napi_valuetype type_of(napi_env env, maybe_napi_value value) {
+	if (!value) return value.status;
+	napi_valuetype result;
+	napi_status status = napi_typeof(env, value.value, &result);
+	return {status, result};
+}
+
 maybe_napi_value wrapInt(napi_env env, int value) {
 	napi_value result;
 	napi_status status = napi_create_number(env, value, &result);
@@ -170,9 +177,8 @@ napi_value handleTypeError(napi_env env, std::string const & details, napi_value
 	message += std::string(", expected ") + toString(wanted);
 
 	{
-		napi_valuetype actual;
-		maybe_value<void> result = napi_typeof(env, source, &actual);
-		if (result) message += std::string(", got ") + toString(actual);
+		maybe_napi_valuetype result = type_of(env, source);
+		if (result) message += std::string(", got ") + toString(result.value);
 	}
 
 	return raiseTypeError(env, message.c_str());
