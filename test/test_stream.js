@@ -12,12 +12,12 @@ function requireBuiltModule(name) {
 const socketpair = requireBuiltModule('unix-socketpair');
 const net        = require('net');
 
-const timeout      = 1000;
+const timeout      = 100;
 const test_message = Buffer.from('test');
 
 let buffer = Buffer.alloc(0);
 
-const fds = socketpair(socketpair.SOCK_STREAM);
+const fds = socketpair();
 console.error('file descriptors: ' + fds);
 
 const sock = [
@@ -41,7 +41,6 @@ sock[1].once('error', err => {
 });
 
 sock[1].on('data', data => {
-	console.error('got data: ' + data.toString());
 	buffer = Buffer.concat([buffer, data]);
 });
 
