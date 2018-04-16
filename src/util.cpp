@@ -56,7 +56,7 @@ maybe_napi_valuetype type_of(napi_env env, maybe_napi_value value) {
 
 maybe_napi_value wrapInt(napi_env env, int value) {
 	napi_value result;
-	napi_status status = napi_create_number(env, value, &result);
+	napi_status status = napi_create_int32(env, value, &result);
 	return {status, result};
 }
 
@@ -68,7 +68,7 @@ maybe_napi_value wrapString(napi_env env, std::string const & value) {
 
 maybe_napi_value makeFunction(napi_env env, char const * name, napi_callback callback, void * data) {
 	napi_value result;
-	napi_status status = napi_create_function(env, name, callback, data, &result);
+	napi_status status = napi_create_function(env, name, NAPI_AUTO_LENGTH, callback, data, &result);
 	return {status, result};
 }
 
@@ -127,14 +127,14 @@ maybe_value<void> setElement(napi_env env, maybe_napi_value array, int index, ma
 napi_value null(napi_env env) {
 	napi_value result;
 	napi_status status = napi_get_null(env, &result);
-	if (status != napi_ok) napi_fatal_error(nullptr, "failed to get null instance");
+	if (status != napi_ok) napi_fatal_error(nullptr, 0, "failed to get null instance", NAPI_AUTO_LENGTH);
 	return result;
 }
 
 napi_value undefined(napi_env env) {
 	napi_value result;
 	napi_status status = napi_get_undefined(env, &result);
-	if (status != napi_ok) napi_fatal_error(nullptr, "failed to get undefined instance");
+	if (status != napi_ok) napi_fatal_error(nullptr, 0, "failed to get undefined instance", NAPI_AUTO_LENGTH);
 	return result;
 }
 
@@ -151,7 +151,7 @@ std::string getErrorMessage(napi_env env) {
 }
 
 napi_value raise(napi_env env, std::string const & message) {
-	napi_throw_error(env, message.c_str());
+	napi_throw_error(env, nullptr, message.c_str());
 	return undefined(env);
 }
 
@@ -167,7 +167,7 @@ napi_value handleError(napi_env env, napi_status original, std::string const & d
 }
 
 napi_value raiseTypeError(napi_env env, std::string const & message) {
-	napi_throw_type_error(env, message.c_str());
+	napi_throw_type_error(env, nullptr, message.c_str());
 	return undefined(env);
 }
 

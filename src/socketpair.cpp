@@ -91,7 +91,7 @@ napi_value socketpair(napi_env env, napi_callback_info info) {
 	return array;
 }
 
-void init(napi_env env, napi_value exports, napi_value module, void *) {
+napi_value init(napi_env env, napi_value exports) {
 	(void) exports;
 
 	// Make function object.
@@ -108,9 +108,13 @@ void init(napi_env env, napi_value exports, napi_value module, void *) {
 	result = setProperty(env, function, "SOCK_DGRAM",  wrapInt(env, SOCK_DGRAM));
 	if (!result) handleError(env, result.status, "set socketpair.SOCK_DGRAM");
 
-	// Set module.exports to the function object.
-	result = setProperty(env, module, "exports", function);
-	if (!result) handleError(env, result.status, "set export to socketpair function");
+#ifdef SOCK_SEQPACKET
+	// Add SOCK_DGRAM property.
+	result = setProperty(env, function, "SOCK_SEQPACKET",  wrapInt(env, SOCK_SEQPACKET));
+	if (!result) handleError(env, result.status, "set socketpair.SOCK_SEQPACKET");
+#endif
+
+	return function.value;
 }
 
 NAPI_MODULE(unix_socketpair, init)
