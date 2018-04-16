@@ -3,6 +3,7 @@
   "version": "0.1.4",
   "description": "create two connected unix sockets with the socketpair() function from POSIX",
   "main": "build/Release/unix-socketpair.node",
+  "types": "index.d.ts",
   "scripts": {
     "test": "node --napi-modules test/test_stream.js"
   },
